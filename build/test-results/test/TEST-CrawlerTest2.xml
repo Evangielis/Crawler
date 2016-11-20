@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="CrawlerTest2" tests="1" skipped="0" failures="0" errors="0" timestamp="2016-11-20T01:26:29" hostname="Socrates" time="0.019">
+  <properties/>
+  <testcase name="testInternet1" classname="CrawlerTest2" time="0.019"/>
+  <system-out><![CDATA[---------------------------------------------
+-=RESULTS FROM internet2.json=-
+Success:
+["http://foo.bar.com/p1", "http://foo.bar.com/p2", "http://foo.bar.com/p3", "http://foo.bar.com/p4", "http://foo.bar.com/p5"]
+
+Skipped:
+["http://foo.bar.com/p1"]
+
+Error:
+[]
+-=EXPECTED OUTPUT FOR internet2.json=-
+Success:
+["http://foo.bar.com/p1", "http://foo.bar.com/p2", "http://foo.bar.com/p3", "http://foo.bar.com/p4", "http://foo.bar.com/p5"]
+
+Skipped:
+["http://foo.bar.com/p1"]
+
+Error:
+[]
+---------------------------------------------
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

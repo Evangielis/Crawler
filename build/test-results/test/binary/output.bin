@@ -1,0 +1,44 @@
+/---------------------------------------------
+!-=RESULTS FROM internet1.json=-
+²Success:
+["http://foo.bar.com/p1", "http://foo.bar.com/p2", "http://foo.bar.com/p4", "http://foo.bar.com/p5", "http://foo.bar.com/p6"]
+
+Skipped:
+["http://foo.bar.com/p1", "http://foo.bar.com/p2", "http://foo.bar.com/p4", "http://foo.bar.com/p5"]
+
+Error:
+["http://foo.bar.com/p3", "http://foo.bar.com/p7"]
+(-=EXPECTED OUTPUT FOR internet1.json=-
+
+Success:
+€["http://foo.bar.com/p1", "http://foo.bar.com/p2", "http://foo.bar.com/p4", "http://foo.bar.com/p5", "http://foo.bar.com/p6"] 
+
+
+Skipped:
+e["http://foo.bar.com/p2", "http://foo.bar.com/p4","http://foo.bar.com/p1", "http://foo.bar.com/p5"]
+
+Error:
+4["http://foo.bar.com/p3", "http://foo.bar.com/p7"]
+/---------------------------------------------
+/---------------------------------------------
+!-=RESULTS FROM internet2.json=-
+·Success:
+["http://foo.bar.com/p1", "http://foo.bar.com/p2", "http://foo.bar.com/p3", "http://foo.bar.com/p4", "http://foo.bar.com/p5"]
+
+Skipped:
+["http://foo.bar.com/p1"]
+
+Error:
+[]
+(-=EXPECTED OUTPUT FOR internet2.json=-
+
+Success:
+["http://foo.bar.com/p1", "http://foo.bar.com/p2", "http://foo.bar.com/p3", "http://foo.bar.com/p4", "http://foo.bar.com/p5"]
+
+
+Skipped:
+["http://foo.bar.com/p1"]
+
+Error:
+[]
+/---------------------------------------------

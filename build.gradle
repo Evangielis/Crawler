@@ -32,3 +32,18 @@ dependencies {
     // 'test.useTestNG()' to your build script.
     testCompile 'junit:junit:4.12'
 }
+
+test {
+	testLogging.showStandardStreams = true
+	testLogging {
+	    events "passed", "skipped", "failed", "standardOut", "standardError"
+	}
+}
+
+task execute(type:JavaExec) {
+   main = 'WebCrawler'
+   classpath = sourceSets.main.runtimeClasspath
+   if (project.hasProperty('myargs')) {
+      args(myargs.split(','))
+      }
+}

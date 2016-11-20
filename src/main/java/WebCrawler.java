@@ -9,13 +9,19 @@ import java.util.concurrent.RecursiveAction;
 
 import org.json.simple.parser.ParseException;
 
-
+/**
+ * Main part of the project creates and crawls an
+ * Internet object from a json file. 
+ * 
+ * @author Lee Painton
+ */
 public class WebCrawler {
 
-	private Set<String> visited;
-	private Set<String> successes;
-	private Set<String> skipped;
-	private Set<String> errors;
+	//All of these sets track addresses
+	private final Set<String> visited;
+	private final Set<String> successes;
+	private final Set<String> skipped;
+	private final Set<String> errors;
 	{
 		visited = new HashSet<>();
 		successes = new HashSet<>();
@@ -23,57 +29,87 @@ public class WebCrawler {
 		errors = new HashSet<>();
 	}
 	
-	public Internet inet;
+	//The Internet object to crawl
+	private final Internet inet;
+	
+	/**
+	 * Passing the constructor a valid path to a json file
+	 * causes it to build an Internet object and prep for crawling. 
+	 * 
+	 * @param filePath String valid path to json file
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	public WebCrawler(String filePath) throws FileNotFoundException, IOException, ParseException {
 		inet = new Internet(filePath);
 	}
 	
-	public void addVisited(String link) {
+	//The methods below provide mutators and accessors as needed.
+	//Note that all accessors and mutators are synchronized on
+	//the their underlying collections to provide thread-safety.
+	private void addVisited(String link) {
 		synchronized(visited) {
 			visited.add(link);
 		}
 	}
-	
-	public boolean isVisited(String link) {
+	private boolean isVisited(String link) {
 		boolean result;
 		synchronized(visited) {
 			result = visited.contains(link);
 		}
 		return result;
 	}
-	
-	public void addSuccess(String link) {
+	private void addSuccess(String link) {
 		synchronized(successes) {
 			successes.add(link);
 		}
 	}
-	
-	public void addSkipped(String link) {
+	private void addSkipped(String link) {
 		synchronized(skipped) {
 			skipped.add(link);
 		}
 	}
-	
-	public void addError(String link) {
+	private void addError(String link) {
 		synchronized(errors) {
 			errors.add(link);
 		}
 	}
 	
+	/**
+	 * Wraps the Internet object's getLink method.
+	 * 
+	 * @param link String address of link to get
+	 * @return array of Strings
+	 */
 	public String[] visitLink(String link) {
 		return inet.getLinks(link);
 	}
 	
+	/**
+	 * Inner class which uses Java's Fork/Join framework to 
+	 * perform the crawling functionality both concurrently
+	 * and recursively. 
+	 * 
+	 * @author Lee
+	 */
 	class ForkCrawl extends RecursiveAction {
 
 		WebCrawler crawler;
 		String addr;
 		
+		/**
+		 * Constructs a new ForkCrawl task.
+		 * 
+		 * @param crawler the active WebCrawler
+		 * @param addr the String address being crawled
+		 */
 		public ForkCrawl(WebCrawler crawler, String addr) {
 			this.crawler = crawler;
 			this.addr = addr;
 		}
 		
+		//Debugging method
 		private void logVisit(String[] links) {
 			StringBuilder sb = new StringBuilder();
 			sb.append(addr).append(" -> ");
@@ -88,12 +124,20 @@ public class WebCrawler {
 			System.out.println(sb.toString());
 		}
 		
+		/**
+		 * Main computational task invoked by the Fork/Join framework.
+		 * Creates new ForkCrawl objects for each link being crawled.
+		 */
 		@Override
 		protected void compute() {
+			//Invariant: addr is not null
+			//Base case: if there are no new links to follow
+				//or no site for addr 
 			
+			//Get the list of links at this address
 			String[] links = visitLink(addr);
-			//logVisit(links);
 			
+			//Branch and terminate if sites doesn't exist.
 			if (links == null) {
 				crawler.addError(addr);
 				return;
@@ -101,6 +145,7 @@ public class WebCrawler {
 				crawler.addSuccess(addr);
 			}
 				
+			//Main branch builds a new task for each non-visited address
 			if (links.length > 0) {
 				Set<ForkCrawl> tasks = new HashSet<ForkCrawl>();
 				for (String link : links) {
@@ -112,11 +157,15 @@ public class WebCrawler {
 						tasks.add(new ForkCrawl(crawler, link));
 					}
 				}
+				//Start new tasks
 				invokeAll(tasks);
 			}
 		}
 	}
 	
+	/**
+	 * Starts the WebCrawler.
+	 */
 	public void crawl() {
 		ForkCrawl fc = new ForkCrawl(this, inet.root);
 		this.addVisited(inet.root);
@@ -124,6 +173,11 @@ public class WebCrawler {
 		pool.invoke(fc);
 	}
 	
+	/**
+	 * Gets a pretty-printed report of the WebCrawler results.
+	 * 
+	 * @return String
+	 */
 	public String getReport() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Success:").append('\n');
@@ -131,9 +185,10 @@ public class WebCrawler {
 		sb.append("Skipped:").append('\n');
 		sb.append(formatCollection(skipped)).append('\n').append('\n');
 		sb.append("Error:").append('\n');
-		sb.append(formatCollection(errors)).append('\n').append('\n');
+		sb.append(formatCollection(errors));
 		return sb.toString();
 	}
+	//Helper method
 	private String formatCollection(Collection<String> col) {
 		StringBuilder sb = new StringBuilder();
 		String[] sortedCol = col.toArray(new String[col.size()]);
@@ -150,15 +205,20 @@ public class WebCrawler {
 	}
 	
 	public static void main(String[] args) {
-		String file = "C:\\Users\\Lee\\workspace\\Crawler\\src\\test\\internet2.json";
+		if (args.length < 1){
+			System.out.println("Need to provide file path to a valid json file.");
+			return;
+		}
+		
+		String path = args[0];
+		WebCrawler crawler;
 		try {
-			WebCrawler wc = new WebCrawler(file);
-			wc.crawl();
-			System.out.println(wc.getReport());
+			crawler = new WebCrawler(path);
+			crawler.crawl();
+			System.out.println(crawler.getReport());
 		} catch (IOException | ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-
 }
